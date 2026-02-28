@@ -6,15 +6,16 @@ import {defineConfig, loadEnv} from 'vite';
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: '/Aura-Mystic/',
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.NODE_ENV': JSON.stringify(mode),
     },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      mainFields: ['browser', 'module', 'main'],
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

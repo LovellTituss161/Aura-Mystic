@@ -2,13 +2,25 @@ import { GoogleGenAI } from '@google/genai';
 import { ReadingType, UserInput } from '../types';
 import { CATEGORIES } from '../constants';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+      throw new Error('Vui lòng cấu hình GEMINI_API_KEY trong phần Secrets của AI Studio để bắt đầu trải nghiệm.');
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export async function generateReading(type: ReadingType, input: UserInput): Promise<string> {
   const category = CATEGORIES.find((c) => c.id === type);
   if (!category) throw new Error('Invalid reading type');
 
   const currentYear = new Date().getFullYear();
+  const ai = getAI();
 
   let prompt = `Bạn là một chuyên gia hàng đầu, uy tín và nổi tiếng thế giới về ${category.title}. `;
   prompt += `Hãy thực hiện một bài phân tích sâu sắc, chính xác và chi tiết cho người dùng dưới đây. `;
