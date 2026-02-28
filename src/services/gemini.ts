@@ -86,15 +86,26 @@ export async function generateReading(type: ReadingType, input: UserInput): Prom
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         temperature: 0.7,
       },
     });
     return response.text || 'Không thể tạo kết quả. Vui lòng thử lại.';
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error calling Gemini API:', error);
-    throw new Error('Đã có lỗi xảy ra khi kết nối với vũ trụ. Vui lòng thử lại sau.');
+    
+    let userFriendlyError = 'Đã có lỗi xảy ra khi kết nối với vũ trụ.';
+    
+    if (error?.message?.includes('API_KEY_INVALID')) {
+      userFriendlyError = 'API Key của bạn không hợp lệ. Vui lòng kiểm tra lại.';
+    } else if (error?.message?.includes('quota')) {
+      userFriendlyError = 'Hết hạn mức sử dụng API (Quota exceeded). Vui lòng thử lại sau.';
+    } else if (error?.message) {
+      userFriendlyError = `Lỗi từ hệ thống: ${error.message}`;
+    }
+
+    throw new Error(userFriendlyError);
   }
 }
